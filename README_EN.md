@@ -28,9 +28,7 @@ It's very easy to start playing PyPong!
 
 We are working to make PyPong an even better game! These features will be added soon:
 
-* **Graphical Interface:** Visual improvements for a more immersive experience. 🎨
 * **Sounds and Music:** Get ready for an epic soundtrack! 🎶
-* **Multiplayer Mode:** Play against your friends in a battle of Pong! 👯‍♂️
 
 ---
 
