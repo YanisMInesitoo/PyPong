@@ -29,7 +29,6 @@ It's very easy to start playing PyPong!
 We are working to make PyPong an even better game! These features will be added soon:
 
 * **Graphical Interface:** Visual improvements for a more immersive experience. 🎨
-* **Difficulty Levels:** Think you're an expert? Try the new levels! 📈
 * **Sounds and Music:** Get ready for an epic soundtrack! 🎶
 * **Multiplayer Mode:** Play against your friends in a battle of Pong! 👯‍♂️
 * **High Score:** Save and display your best score. 🏅
