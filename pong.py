@@ -31,7 +31,6 @@ import time
 from pelota import Pelota
 from raqueta import Raqueta
 
-# Configuración de la ventana principal
 tk = Tk()
 tk.title("PyPong")
 tk.resizable(0, 0)
@@ -40,7 +39,6 @@ canvas = Canvas(tk, width=500, height=400, bd=0, highlightthickness=0)
 canvas.pack()
 tk.update()
 
-# --- NUEVA FUNCIÓN PARA DIBUJAR DEGRADADO ---
 def dibujar_degradado(canvas, color1, color2):
     width = canvas.winfo_width()
     height = canvas.winfo_height()
@@ -54,30 +52,46 @@ def dibujar_degradado(canvas, color1, color2):
         b = int(b1 + (b2 - b1) * i / height)
         color = f'#{r:02x}{g:02x}{b:02x}'
         canvas.create_line(0, i, width, i, fill=color)
-# --- FIN NUEVA FUNCIÓN ---
 
-# --- NUEVA FUNCIÓN PARA INICIAR JUEGO CON PARÁMETROS ---
 def iniciar_juego(ancho, alto, modo_juego):
     tk.geometry(f"{ancho}x{alto}")
     canvas.config(width=ancho, height=alto)
     canvas.delete("all")
     dibujar_degradado(canvas, "#00008B", "#4169E1")
 
-    # Si es modo de 1 jugador, solo se crea una raqueta
     if modo_juego == 1:
-        # Poner el código para el modo 1P aquí cuando esté listo
-        # Por ahora, nos quedamos en el modo 2P
-        iniciar_juego(500, 400, 2)
-        return
-    
-    # Si es modo de 2 jugadores, se crean las dos raquetas y las puntuaciones
-    if modo_juego == 2:
+        raqueta = Raqueta(canvas, 'blue', 1)
+        pelota = Pelota(canvas, [raqueta], 'white', 1)
+        
+        score_display = canvas.create_text(ancho * 0.5, 20, text="Score: 0", font=('Arial', 16), fill='white')
+        
+        while 1:
+            if raqueta.empezado:
+                pelota.dibujar()
+            
+            raqueta.dibujar()
+            canvas.itemconfig(score_display, text="Score: " + str(pelota.puntuacion_jugador1))
+            
+            if pelota.golpea_fondo == True:
+                pelota.golpea_fondo = False
+                pelota.canvas.coords(pelota.id, ancho // 2 - 7, alto // 2 - 7, ancho // 2 + 8, alto // 2 + 8)
+                empezar = [-3, -2, -1, 1, 2, 3]
+                random.shuffle(empezar)
+                pelota.x = empezar[0]
+                pelota.y = -3
+                raqueta.empezado = False
+
+            tk.update_idletasks()
+            tk.update()
+            time.sleep(0.01)
+
+    elif modo_juego == 2:
         puntuacion_j1_display = canvas.create_text(ancho * 0.1, 20, text="J1: 0", font=('Arial', 16), fill='white')
         puntuacion_j2_display = canvas.create_text(ancho * 0.9, 20, text="J2: 0", font=('Arial', 16), fill='white')
         
-        raqueta1 = Raqueta(canvas, 'blue', 1)
-        raqueta2 = Raqueta(canvas, 'red', 2)
-        pelota = Pelota(canvas, raqueta1, raqueta2, 'white')
+        raqueta1 = Raqueta(canvas, 'blue', 2, 1)
+        raqueta2 = Raqueta(canvas, 'red', 2, 2)
+        pelota = Pelota(canvas, [raqueta1, raqueta2], 'white', 2)
         
         while 1:
             pelota.dibujar()
@@ -99,7 +113,6 @@ def iniciar_juego(ancho, alto, modo_juego):
             tk.update()
             time.sleep(0.01)
 
-# Función para la pantalla de inicio
 def pantalla_de_inicio():
     canvas.delete("all")
     dibujar_degradado(canvas, "#303030", "#101010")
@@ -109,7 +122,6 @@ def pantalla_de_inicio():
 
     button_style = {'font': ('Arial', 14), 'bg': '#4CAF50', 'fg': 'white', 'activebackground': '#45a049', 'activeforeground': 'white', 'relief': 'raised', 'bd': 3}
 
-    # Botones de modo de juego
     boton_1p = Button(tk, text="1 Jugador", command=lambda: mostrar_opciones_resolucion(1), **button_style)
     canvas.create_window(150, 180, window=boton_1p, width=150, height=40)
     
@@ -129,6 +141,5 @@ def mostrar_opciones_resolucion(modo_juego):
         canvas.create_window(250, y_pos, window=boton, width=150, height=40)
         y_pos += 60
 
-# Iniciar la pantalla de inicio al ejecutar el script
 pantalla_de_inicio()
 tk.mainloop()
