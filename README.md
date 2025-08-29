@@ -29,7 +29,6 @@ Un **simple juego de Pong** escrito en Python y **Tkinter** para una experiencia
 ¡Estamos trabajando para hacer de PyPong un juego aún mejor! Próximamente se añadirán estas características:
 
 * **Interfaz Gráfica:** Mejoras visuales para una experiencia más inmersiva. 🎨
-* **Niveles de dificultad:** ¿Crees que eres un experto? ¡Prueba los nuevos niveles! 📈
 * **Sonidos y Música:** ¡Prepárate para una banda sonora épica! 🎶
 * **Modo Multijugador:** ¡Juega contra tus amigos en una batalla de Pong! 👯‍♂️
 * **Puntuación más alta:** Guarda y muestra tu mejor puntuación. 🏅
