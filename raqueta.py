@@ -8,8 +8,8 @@ class Raqueta:
         self.x = 0
         self.canvas_width = self.canvas.winfo_width()
         self.empezado = False
-        self.canvas.bind_all('<KeyPress-Left>' or '<KeyPress-a>', self.ir_izq)
-        self.canvas.bind_all('<KeyPress-Right>' or '<KeyPress-d>', self.ir_der)
+        self.canvas.bind_all('<KeyPress-Left>', self.ir_izq)
+        self.canvas.bind_all('<KeyPress-Right>', self.ir_der)
         self.canvas.bind_all('<Button-1>', self.empezar_juego)
 
     def dibujar(self):

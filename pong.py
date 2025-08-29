@@ -40,6 +40,24 @@ canvas = Canvas(tk, width=500, height=400, bd=0, highlightthickness=0)
 canvas.pack()
 tk.update()
 
+def leer_puntuacion_mas_alta():
+    try:
+        with open('hi-score.txt', 'r') as file:
+            return int(file.read())
+    except (FileNotFoundError, ValueError):
+        return 0
+
+def guardar_puntuacion_mas_alta(puntuacion):
+    with open('hi-score.txt', 'w') as file:
+        file.write(str(puntuacion))
+
+puntuacion_mas_alta = leer_puntuacion_mas_alta()
+score_display = canvas.create_text(450, 20, text="Score: 0", font=('Arial', 16), fill='black')
+hi_score_display = canvas.create_text(450, 40, text="Hi-Score: " + str(puntuacion_mas_alta), font=('Arial', 12), fill='gray')
+
+puntuacion = 0
+score_display = canvas.create_text(450, 20, text="Score: " + str(puntuacion), font=('Arial', 16), fill='black')
+
 raqueta = Raqueta(canvas, 'blue')
 pelota = Pelota(canvas, raqueta, 'red')
 
@@ -47,6 +65,16 @@ while 1:
     if pelota.golpea_fondo == False and raqueta.empezado == True:
         pelota.dibujar()
         raqueta.dibujar()
+        canvas.itemconfig(score_display, text="Score: " + str(pelota.puntuacion))
+
+        if pelota.puntuacion % 5 == 0 and pelota.puntuacion != 0:
+            pelota.aumentar_velocidad()
+    
+    if pelota.golpea_fondo == True and pelota.puntuacion > puntuacion_mas_alta:
+        puntuacion_mas_alta = pelota.puntuacion
+        canvas.itemconfig(hi_score_display, text="Hi-Score: " + str(puntuacion_mas_alta))
+        guardar_puntuacion_mas_alta(puntuacion_mas_alta)
+
     tk.update_idletasks()
     tk.update()
     time.sleep(0.01)

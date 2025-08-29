@@ -14,6 +14,7 @@ class Pelota:
         self.canvas_height = self.canvas.winfo_height()
         self.canvas_width = self.canvas.winfo_width()
         self.golpea_fondo = False
+        self.puntuacion = 0
 
     def golpea_raqueta(self, pos):
         raqueta_pos = self.canvas.coords(self.raqueta.id)
@@ -22,6 +23,11 @@ class Pelota:
                 return True
                 self.x += self.raqueta.x
         return False
+    
+    def aumentar_velocidad(self):
+        if abs(self.x) < 5:  # La velocidad máxima será 5
+            self.x *= 1.1
+        self.y *= 1.1
 
     def dibujar(self):
         self.canvas.move(self.id, self.x, self.y)
@@ -31,6 +37,11 @@ class Pelota:
         if pos[3] >= self.canvas_height:
             self.golpea_fondo = True
             self.canvas.create_text(250, 200, font=('Barbieri Book', 34), text='Fin del Juego :c', state='normal')
+        
+        if self.golpea_raqueta(pos) == True:
+            self.y = -2
+            self.puntuacion += 1  # Aumenta la puntuación
+
         if self.golpea_raqueta(pos) == True:
             self.y = -2
         if pos[0] <= 0:
