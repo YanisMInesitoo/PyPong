@@ -66,9 +66,6 @@ while 1:
         pelota.dibujar()
         raqueta.dibujar()
         canvas.itemconfig(score_display, text="Score: " + str(pelota.puntuacion))
-
-        if pelota.puntuacion % 5 == 0 and pelota.puntuacion != 0:
-            pelota.aumentar_velocidad()
     
     if pelota.golpea_fondo == True and pelota.puntuacion > puntuacion_mas_alta:
         puntuacion_mas_alta = pelota.puntuacion

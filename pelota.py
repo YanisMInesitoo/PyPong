@@ -23,11 +23,6 @@ class Pelota:
                 return True
                 self.x += self.raqueta.x
         return False
-    
-    def aumentar_velocidad(self):
-        if abs(self.x) < 5:  # La velocidad máxima será 5
-            self.x *= 1.1
-        self.y *= 1.1
 
     def dibujar(self):
         self.canvas.move(self.id, self.x, self.y)

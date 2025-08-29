@@ -15,3 +15,4 @@ Todos los cambios notables del proyecto se documentarán en este archivo.
     * `main.py`: Código principal del juego.
     * `README.md`: Descripción del juego.
     * `CONTRIBUTING.md`: Guía para colaboradores.
+    
