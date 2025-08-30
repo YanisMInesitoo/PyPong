@@ -35,7 +35,7 @@ class Pelota:
                 if pos[3] >= raqueta_pos[1] and pos[3] <= raqueta_pos[3]:
                     if self.golpe_sonido:
                         self.golpe_sonido.play()
-                    return True
+                    return True, 1
         elif self.modo_juego == 2:
             raqueta1_pos = self.canvas.coords(self.raquetas[0].id)
             if pos[2] >= raqueta1_pos[0] and pos[0] <= raqueta1_pos[2]:
@@ -83,11 +83,12 @@ class Pelota:
                 self.y = -abs(self.y)
         
         if self.modo_juego == 1 or self.modo_juego == 3:
-            if self.golpea_raqueta(pos)[0]:
+            rebotar, jugador_que_reboto = self.golpea_raqueta(pos)
+            if rebotar:
                 self.y = -abs(self.y)
                 self.puntuacion_jugador1 += 1
             if self.modo_juego == 3:
-                if self.golpea_raqueta(pos)[0] and self.golpea_raqueta(pos)[1] == 2:
+                if rebotar and jugador_que_reboto == 2:
                      self.y = -abs(self.y)
             if pos[0] <= 0:
                 self.x = abs(self.x)
