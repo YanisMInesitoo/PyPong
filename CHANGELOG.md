@@ -25,3 +25,13 @@ Todos los cambios notables del proyecto se documentarán en este archivo.
     **Sistema de compra y de puntos**
 
 ### Version 1.8 - 30 de Agosto, 2025
+
+### Version 1.9 - 30 de Agosto, 2025
+
+### Version 2.0 - 30 de Agosto, 2025
+
+* **Sistema de logros**
+
+### Version 2.0 - 30 de Agosto, 2025
+
+* **Fix de bugs y de fisicas**

@@ -84,19 +84,27 @@ def cargar_progreso():
     global monedas, items_comprados, logros
     try:
         with open("progreso.json", "r") as archivo:
-            datos = json.load(archivo)
-            monedas = datos.get("monedas", 0)
-            items_comprados = datos.get("items", [])
-            logros_guardados = datos.get("logros", {})
-            for key, value in logros_guardados.items():
-                if key in logros:
-                    logros[key]["completado"] = value.get("completado", False)
-            if "raqueta_azul" not in items_comprados:
-                items_comprados.append("raqueta_azul")
+            # Revisa si el archivo está vacío
+            contenido = archivo.read()
+            if contenido:
+                datos = json.loads(contenido)
+                monedas = datos.get("monedas", 0)
+                items_comprados = datos.get("items", [])
+                logros_guardados = datos.get("logros", {})
+                for key, value in logros_guardados.items():
+                    if key in logros:
+                        logros[key]["completado"] = value.get("completado", False)
+            else:
+                print("Archivo de progreso vacío. Se creará uno nuevo.")
     except FileNotFoundError:
-        monedas = 0
-        items_comprados = ["raqueta_azul"]
-        
+        print("Archivo de progreso no encontrado. Se creará uno nuevo.")
+    except json.JSONDecodeError:
+        print("Error al leer el archivo de progreso. Se creará uno nuevo.")
+    
+    # Asegúrate de que el estado inicial se establece si el archivo no existe o está mal
+    if "raqueta_azul" not in items_comprados:
+        items_comprados.append("raqueta_azul")
+
 def chequear_logro(logro_id):
     if not logros[logro_id]["completado"]:
         logros[logro_id]["completado"] = True
