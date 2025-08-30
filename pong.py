@@ -25,12 +25,27 @@
          - Guardar la puntuacion mas alta
     
 """
+
 from tkinter import *
 import random
 import time
 import json
 from pelota import Pelota
 from raqueta import Raqueta
+import pygame
+
+# Inicia el mezclador de sonido de Pygame
+pygame.mixer.init()
+
+# Carga los archivos de sonido
+try:
+    golpe_sonido = pygame.mixer.Sound("golpe.wav")
+    derrota_sonido = pygame.mixer.Sound("derrota.wav")
+except pygame.error:
+    golpe_sonido = None
+    derrota_sonido = None
+    print("No se encontraron los archivos de sonido. Asegúrate de tener 'golpe.wav' y 'derrota.wav' en la misma carpeta.")
+
 
 tk = Tk()
 tk.title("PyPong")
@@ -42,9 +57,9 @@ tk.update()
 
 # --- Sistema de Monedas y Guardado ---
 monedas = 0
-items_comprados = []
+items_comprados = ["raqueta_azul", "pelota_blanca"]
 tienda_items = {
-    "raqueta_azul": {"nombre": "Raqueta Azul", "precio": 50, "tipo": "raqueta", "color": "blue"},
+    "raqueta_azul": {"nombre": "Raqueta Azul", "precio": 0, "tipo": "raqueta", "color": "blue"},
     "raqueta_verde": {"nombre": "Raqueta Verde", "precio": 100, "tipo": "raqueta", "color": "green"},
     "pelota_amarilla": {"nombre": "Pelota Amarilla", "precio": 75, "tipo": "pelota", "color": "yellow"},
     "pelota_rosa": {"nombre": "Pelota Rosa", "precio": 150, "tipo": "pelota", "color": "pink"}
@@ -65,9 +80,11 @@ def cargar_progreso():
             datos = json.load(archivo)
             monedas = datos.get("monedas", 0)
             items_comprados = datos.get("items", [])
+            if "raqueta_azul" not in items_comprados:
+                items_comprados.append("raqueta_azul")
     except FileNotFoundError:
         monedas = 0
-        items_comprados = []
+        items_comprados = ["raqueta_azul"]
 
 def ganar_monedas(cantidad):
     global monedas
@@ -104,10 +121,19 @@ def iniciar_juego(ancho, alto, modo_juego):
     dibujar_degradado(canvas, "#00008B", "#4169E1")
 
     monedas_display = canvas.create_text(ancho * 0.9, 20, text="Monedas: " + str(monedas), font=('Arial', 16), fill='white')
+    
+    # Colores por defecto y seleccionados
+    raqueta_color = "blue"
+    pelota_color = "white"
+    for item_id in items_comprados:
+        if tienda_items[item_id]["tipo"] == "raqueta":
+            raqueta_color = tienda_items[item_id]["color"]
+        elif tienda_items[item_id]["tipo"] == "pelota":
+            pelota_color = tienda_items[item_id]["color"]
 
     if modo_juego == 1:
-        raqueta = Raqueta(canvas, 'blue', 1)
-        pelota = Pelota(canvas, [raqueta], 'white', 1)
+        raqueta = Raqueta(canvas, raqueta_color, 1)
+        pelota = Pelota(canvas, [raqueta], pelota_color, 1, golpe_sonido, derrota_sonido)
         score_display = canvas.create_text(ancho * 0.5, 20, text="Score: 0", font=('Arial', 16), fill='white')
         while 1:
             if raqueta.empezado:
@@ -132,9 +158,9 @@ def iniciar_juego(ancho, alto, modo_juego):
     elif modo_juego == 2:
         puntuacion_j1_display = canvas.create_text(ancho * 0.1, 20, text="J1: 0", font=('Arial', 16), fill='white')
         puntuacion_j2_display = canvas.create_text(ancho * 0.9, 20, text="J2: 0", font=('Arial', 16), fill='white')
-        raqueta1 = Raqueta(canvas, 'blue', 2, "humano", 1)
-        raqueta2 = Raqueta(canvas, 'red', 2, "humano", 2)
-        pelota = Pelota(canvas, [raqueta1, raqueta2], 'white', 2)
+        raqueta1 = Raqueta(canvas, raqueta_color, 2, "humano", 1)
+        raqueta2 = Raqueta(canvas, raqueta_color, 2, "humano", 2)
+        pelota = Pelota(canvas, [raqueta1, raqueta2], pelota_color, 2, golpe_sonido, derrota_sonido)
         while 1:
             pelota.dibujar()
             raqueta1.dibujar()
@@ -156,9 +182,9 @@ def iniciar_juego(ancho, alto, modo_juego):
             time.sleep(0.01)
 
     elif modo_juego == 3:
-        raqueta_jugador = Raqueta(canvas, 'blue', 3, "humano")
-        raqueta_ia = Raqueta(canvas, 'red', 3, "ia")
-        pelota = Pelota(canvas, [raqueta_jugador, raqueta_ia], 'white', 3)
+        raqueta_jugador = Raqueta(canvas, raqueta_color, 3, "humano")
+        raqueta_ia = Raqueta(canvas, "red", 3, "ia")
+        pelota = Pelota(canvas, [raqueta_jugador, raqueta_ia], pelota_color, 3, golpe_sonido, derrota_sonido)
         score_display_j1 = canvas.create_text(ancho * 0.5, 20, text="Score: 0", font=('Arial', 16), fill='white')
         
         while 1:
@@ -185,6 +211,7 @@ def iniciar_juego(ancho, alto, modo_juego):
             tk.update()
             time.sleep(0.01)
 
+# --- Pantalla de la Tienda ---
 def pantalla_tienda():
     canvas.delete("all")
     dibujar_degradado(canvas, "#303030", "#101010")
@@ -194,6 +221,9 @@ def pantalla_tienda():
     
     y_pos = 120
     for item_id, item_info in tienda_items.items():
+        if item_info["precio"] == 0:
+            continue
+        
         estado = "COMPRADO" if item_id in items_comprados else f"{item_info['precio']} MONEDAS"
         
         canvas.create_text(150, y_pos, text=item_info["nombre"], font=('Arial', 14), fill='white', anchor='w')

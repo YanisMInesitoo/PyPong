@@ -1,11 +1,15 @@
 from tkinter import *
 import random
+import pygame
 
 class Pelota:
-    def __init__(self, canvas, raquetas, color, modo_juego):
+    def __init__(self, canvas, raquetas, color, modo_juego, golpe_sonido, derrota_sonido):
         self.canvas = canvas
         self.raquetas = raquetas
         self.modo_juego = modo_juego
+        self.golpe_sonido = golpe_sonido
+        self.derrota_sonido = derrota_sonido
+        
         self.id = canvas.create_oval(10, 10, 25, 25, fill=color)
         
         if self.modo_juego == 1 or self.modo_juego == 3:
@@ -29,24 +33,34 @@ class Pelota:
             raqueta_pos = self.canvas.coords(self.raquetas[0].id)
             if pos[2] >= raqueta_pos[0] and pos[0] <= raqueta_pos[2]:
                 if pos[3] >= raqueta_pos[1] and pos[3] <= raqueta_pos[3]:
+                    if self.golpe_sonido:
+                        self.golpe_sonido.play()
                     return True
         elif self.modo_juego == 2:
             raqueta1_pos = self.canvas.coords(self.raquetas[0].id)
             if pos[2] >= raqueta1_pos[0] and pos[0] <= raqueta1_pos[2]:
                 if pos[3] >= raqueta1_pos[1] and pos[3] <= raqueta1_pos[3]:
+                    if self.golpe_sonido:
+                        self.golpe_sonido.play()
                     return True, 1
             raqueta2_pos = self.canvas.coords(self.raquetas[1].id)
             if pos[2] >= raqueta2_pos[0] and pos[0] <= raqueta2_pos[2]:
                 if pos[3] >= raqueta2_pos[1] and pos[3] <= raqueta2_pos[3]:
+                    if self.golpe_sonido:
+                        self.golpe_sonido.play()
                     return True, 2
         elif self.modo_juego == 3:
             raqueta1_pos = self.canvas.coords(self.raquetas[0].id)
             raqueta2_pos = self.canvas.coords(self.raquetas[1].id)
             if pos[2] >= raqueta1_pos[0] and pos[0] <= raqueta1_pos[2]:
                 if pos[3] >= raqueta1_pos[1] and pos[3] <= raqueta1_pos[3]:
+                    if self.golpe_sonido:
+                        self.golpe_sonido.play()
                     return True, 1
             if pos[2] >= raqueta2_pos[0] and pos[0] <= raqueta2_pos[2]:
                 if pos[3] >= raqueta2_pos[1] and pos[3] <= raqueta2_pos[3]:
+                    if self.golpe_sonido:
+                        self.golpe_sonido.play()
                     return True, 2
         return False, 0
 
@@ -56,7 +70,12 @@ class Pelota:
         
         if pos[1] <= 0:
             self.y = abs(self.y)
+            if self.golpe_sonido:
+                self.golpe_sonido.play()
+        
         if pos[3] >= self.canvas_height:
+            if self.derrota_sonido:
+                self.derrota_sonido.play()
             if self.modo_juego == 1:
                 self.golpea_fondo = True
                 self.canvas.create_text(self.canvas_width/2, self.canvas_height/2, font=('Barbieri Book', 34), text='Fin del Juego :c', state='normal')
@@ -70,8 +89,14 @@ class Pelota:
             if self.modo_juego == 3:
                 if self.golpea_raqueta(pos)[0] and self.golpea_raqueta(pos)[1] == 2:
                      self.y = -abs(self.y)
-            if pos[0] <= 0 or pos[2] >= self.canvas_width:
-                self.x = -self.x
+            if pos[0] <= 0:
+                self.x = abs(self.x)
+                if self.golpe_sonido:
+                    self.golpe_sonido.play()
+            if pos[2] >= self.canvas_width:
+                self.x = -abs(self.x)
+                if self.golpe_sonido:
+                    self.golpe_sonido.play()
         elif self.modo_juego == 2:
             rebotar, jugador_que_reboto = self.golpea_raqueta(pos)
             if rebotar:
@@ -83,6 +108,10 @@ class Pelota:
             if pos[0] <= 0:
                 self.puntuacion_jugador2 += 1
                 self.golpea_fondo = True
+                if self.derrota_sonido:
+                    self.derrota_sonido.play()
             if pos[2] >= self.canvas_width:
                 self.puntuacion_jugador1 += 1
                 self.golpea_fondo = True
+                if self.derrota_sonido:
+                    self.derrota_sonido.play()
