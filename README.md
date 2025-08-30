@@ -28,7 +28,7 @@ Un **simple juego de Pong** escrito en Python y **Tkinter** para una experiencia
 
 ¡Estamos trabajando para hacer de PyPong un juego aún mejor! Próximamente se añadirán estas características:
 
-* **Sonidos y Música:** ¡Prepárate para una banda sonora épica! 🎶
+* **Nada por añadir aun**
 
 ---
 
