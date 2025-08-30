@@ -55,7 +55,7 @@ canvas = Canvas(tk, width=500, height=400, bd=0, highlightthickness=0)
 canvas.pack()
 tk.update()
 
-# --- Sistema de Monedas y Guardado ---
+# --- Sistema de Monedas, Logros y Guardado ---
 monedas = 0
 items_comprados = ["raqueta_azul", "pelota_blanca"]
 tienda_items = {
@@ -65,26 +65,53 @@ tienda_items = {
     "pelota_rosa": {"nombre": "Pelota Rosa", "precio": 150, "tipo": "pelota", "color": "pink"}
 }
 
+logros = {
+    "primer_golpe": {"nombre": "Primer Golpe", "descripcion": "Golpea la pelota una vez", "completado": False},
+    "cien_puntos": {"nombre": "Experto en rebotes", "descripcion": "Consigue 100 puntos en un solo juego", "completado": False},
+    "comprador_novato": {"nombre": "Mi primera compra", "descripcion": "Compra un artículo en la tienda", "completado": False}
+}
+
 def guardar_progreso():
     datos = {
         "monedas": monedas,
-        "items": items_comprados
+        "items": items_comprados,
+        "logros": logros
     }
     with open("progreso.json", "w") as archivo:
         json.dump(datos, archivo)
 
 def cargar_progreso():
-    global monedas, items_comprados
+    global monedas, items_comprados, logros
     try:
         with open("progreso.json", "r") as archivo:
             datos = json.load(archivo)
             monedas = datos.get("monedas", 0)
             items_comprados = datos.get("items", [])
+            logros_guardados = datos.get("logros", {})
+            for key, value in logros_guardados.items():
+                if key in logros:
+                    logros[key]["completado"] = value.get("completado", False)
             if "raqueta_azul" not in items_comprados:
                 items_comprados.append("raqueta_azul")
     except FileNotFoundError:
         monedas = 0
         items_comprados = ["raqueta_azul"]
+        
+def chequear_logro(logro_id):
+    if not logros[logro_id]["completado"]:
+        logros[logro_id]["completado"] = True
+        guardar_progreso()
+        mostrar_notificacion_logro(logros[logro_id]["nombre"])
+
+def mostrar_notificacion_logro(nombre_logro):
+    global canvas
+    canvas.create_rectangle(150, 150, 350, 250, fill="yellow", outline="black")
+    canvas.create_text(250, 180, text="¡LOGRO DESBLOQUEADO!", font=('Arial', 12, 'bold'))
+    canvas.create_text(250, 210, text=nombre_logro, font=('Arial', 16, 'bold'))
+    tk.update()
+    time.sleep(2)
+    canvas.delete("all")
+    pantalla_de_inicio()
 
 def ganar_monedas(cantidad):
     global monedas
@@ -97,8 +124,9 @@ def comprar_item(item_id):
         monedas -= item["precio"]
         items_comprados.append(item_id)
         guardar_progreso()
+        chequear_logro("comprador_novato")
         pantalla_tienda()
-# --- Fin Sistema de Monedas y Guardado ---
+# --- Fin Sistema de Monedas, Logros y Guardado ---
 
 def dibujar_degradado(canvas, color1, color2):
     width = canvas.winfo_width()
@@ -131,11 +159,14 @@ def iniciar_juego(ancho, alto, modo_juego):
         elif tienda_items[item_id]["tipo"] == "pelota":
             pelota_color = tienda_items[item_id]["color"]
 
+    juego_en_curso = True
+    
     if modo_juego == 1:
         raqueta = Raqueta(canvas, raqueta_color, 1)
         pelota = Pelota(canvas, [raqueta], pelota_color, 1, golpe_sonido, derrota_sonido)
         score_display = canvas.create_text(ancho * 0.5, 20, text="Score: 0", font=('Arial', 16), fill='white')
-        while 1:
+        
+        while juego_en_curso:
             if raqueta.empezado:
                 pelota.dibujar()
                 ganar_monedas(1)
@@ -143,13 +174,9 @@ def iniciar_juego(ancho, alto, modo_juego):
             canvas.itemconfig(score_display, text="Score: " + str(pelota.puntuacion_jugador1))
             canvas.itemconfig(monedas_display, text="Monedas: " + str(monedas))
             if pelota.golpea_fondo == True:
-                pelota.golpea_fondo = False
-                pelota.canvas.coords(pelota.id, ancho // 2 - 7, alto // 2 - 7, ancho // 2 + 8, alto // 2 + 8)
-                empezar = [-3, -2, -1, 1, 2, 3]
-                random.shuffle(empezar)
-                pelota.x = empezar[0]
-                pelota.y = -3
-                raqueta.empezado = False
+                juego_en_curso = False
+                if pelota.puntuacion_jugador1 >= 100:
+                    chequear_logro("cien_puntos")
                 guardar_progreso()
             tk.update_idletasks()
             tk.update()
@@ -161,7 +188,8 @@ def iniciar_juego(ancho, alto, modo_juego):
         raqueta1 = Raqueta(canvas, raqueta_color, 2, "humano", 1)
         raqueta2 = Raqueta(canvas, raqueta_color, 2, "humano", 2)
         pelota = Pelota(canvas, [raqueta1, raqueta2], pelota_color, 2, golpe_sonido, derrota_sonido)
-        while 1:
+        
+        while juego_en_curso:
             pelota.dibujar()
             raqueta1.dibujar()
             raqueta2.dibujar()
@@ -170,12 +198,7 @@ def iniciar_juego(ancho, alto, modo_juego):
             canvas.itemconfig(puntuacion_j2_display, text="J2: " + str(pelota.puntuacion_jugador2))
             canvas.itemconfig(monedas_display, text="Monedas: " + str(monedas))
             if pelota.golpea_fondo == True:
-                pelota.golpea_fondo = False
-                pelota.canvas.coords(pelota.id, ancho // 2 - 7, alto // 2 - 7, ancho // 2 + 8, alto // 2 + 8)
-                empezar = [-3, -2, -1, 1, 2, 3]
-                random.shuffle(empezar)
-                pelota.x = empezar[0]
-                pelota.y = -3
+                juego_en_curso = False
                 guardar_progreso()
             tk.update_idletasks()
             tk.update()
@@ -187,7 +210,7 @@ def iniciar_juego(ancho, alto, modo_juego):
         pelota = Pelota(canvas, [raqueta_jugador, raqueta_ia], pelota_color, 3, golpe_sonido, derrota_sonido)
         score_display_j1 = canvas.create_text(ancho * 0.5, 20, text="Score: 0", font=('Arial', 16), fill='white')
         
-        while 1:
+        while juego_en_curso:
             if raqueta_jugador.empezado:
                 pelota_pos = pelota.canvas.coords(pelota.id)
                 raqueta_ia.dibujar(pelota_pos)
@@ -199,17 +222,15 @@ def iniciar_juego(ancho, alto, modo_juego):
             canvas.itemconfig(monedas_display, text="Monedas: " + str(monedas))
             
             if pelota.golpea_fondo == True:
-                pelota.golpea_fondo = False
-                pelota.canvas.coords(pelota.id, ancho // 2 - 7, alto // 2 - 7, ancho // 2 + 8, alto // 2 + 8)
-                empezar = [-3, -2, -1, 1, 2, 3]
-                random.shuffle(empezar)
-                pelota.x = empezar[0]
-                pelota.y = -3
-                raqueta_jugador.empezado = False
+                juego_en_curso = False
+                if pelota.puntuacion_jugador1 >= 100:
+                    chequear_logro("cien_puntos")
                 guardar_progreso()
             tk.update_idletasks()
             tk.update()
             time.sleep(0.01)
+    
+    pantalla_de_inicio()
 
 # --- Pantalla de la Tienda ---
 def pantalla_tienda():
@@ -239,6 +260,25 @@ def pantalla_tienda():
     boton_volver = Button(tk, text="Volver", command=pantalla_de_inicio, font=('Arial', 14))
     canvas.create_window(250, y_pos + 30, window=boton_volver, width=150)
     
+def pantalla_logros():
+    canvas.delete("all")
+    dibujar_degradado(canvas, "#303030", "#101010")
+    
+    canvas.create_text(250, 50, text="LOGROS", font=('Arial', 40, 'bold'), fill="white")
+    
+    y_pos = 120
+    for logro_id, logro_info in logros.items():
+        estado = "DESBLOQUEADO" if logro_info["completado"] else "BLOQUEADO"
+        color = "green" if logro_info["completado"] else "red"
+        
+        canvas.create_text(150, y_pos, text=logro_info["nombre"], font=('Arial', 14), fill='white', anchor='w')
+        canvas.create_text(150, y_pos + 20, text=logro_info["descripcion"], font=('Arial', 10), fill='gray', anchor='w')
+        canvas.create_text(400, y_pos, text=estado, font=('Arial', 12), fill=color)
+        y_pos += 60
+    
+    boton_volver = Button(tk, text="Volver", command=pantalla_de_inicio, font=('Arial', 14))
+    canvas.create_window(250, y_pos + 30, window=boton_volver, width=150)
+
 def pantalla_de_inicio():
     canvas.delete("all")
     dibujar_degradado(canvas, "#303030", "#101010")
@@ -258,7 +298,11 @@ def pantalla_de_inicio():
     canvas.create_window(420, 180, window=boton_2p, width=150, height=40)
     
     boton_tienda = Button(tk, text="TIENDA", command=pantalla_tienda, font=('Arial', 14), bg='purple', fg='white')
-    canvas.create_window(250, 250, window=boton_tienda, width=150, height=40)
+    canvas.create_window(150, 250, window=boton_tienda, width=150, height=40)
+    
+    boton_logros = Button(tk, text="LOGROS", command=pantalla_logros, font=('Arial', 14), bg='gold', fg='black')
+    canvas.create_window(350, 250, window=boton_logros, width=150, height=40)
+
 
 def mostrar_opciones_resolucion(modo_juego):
     canvas.delete("all")

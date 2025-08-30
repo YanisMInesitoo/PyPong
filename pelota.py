@@ -76,17 +76,16 @@ class Pelota:
         if pos[3] >= self.canvas_height:
             if self.derrota_sonido:
                 self.derrota_sonido.play()
-            if self.modo_juego == 1:
-                self.golpea_fondo = True
-                self.canvas.create_text(self.canvas_width/2, self.canvas_height/2, font=('Barbieri Book', 34), text='Fin del Juego :c', state='normal')
-            else:
-                self.y = -abs(self.y)
+            self.golpea_fondo = True
         
         if self.modo_juego == 1 or self.modo_juego == 3:
             rebotar, jugador_que_reboto = self.golpea_raqueta(pos)
             if rebotar:
                 self.y = -abs(self.y)
                 self.puntuacion_jugador1 += 1
+                if self.puntuacion_jugador1 == 1:
+                    # El logro "Primer Golpe" se activa en pong.py
+                    pass
             if self.modo_juego == 3:
                 if rebotar and jugador_que_reboto == 2:
                      self.y = -abs(self.y)
