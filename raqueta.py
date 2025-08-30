@@ -8,7 +8,7 @@ class Raqueta:
         self.jugador = jugador
         self.empezado = False
 
-        if self.modo_juego == 1 or self.modo_juego == 3:  # Modo 1P o U vs AI
+        if self.modo_juego == 1 or self.modo_juego == 3:
             self.id = canvas.create_rectangle(0, 0, 100, 10, fill=color)
             self.canvas.move(self.id, 200, 300)
             self.x = 0
@@ -16,7 +16,7 @@ class Raqueta:
                 self.canvas.bind_all('<KeyPress-Left>', self.ir_izq)
                 self.canvas.bind_all('<KeyPress-Right>', self.ir_der)
                 self.canvas.bind_all('<Button-1>', self.empezar_juego)
-        elif self.modo_juego == 2:  # Modo 2P
+        elif self.modo_juego == 2:
             self.id = canvas.create_rectangle(0, 0, 10, 100, fill=color)
             if self.jugador == 1:
                 self.canvas.move(self.id, 50, 150)

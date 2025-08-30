@@ -103,7 +103,6 @@ def iniciar_juego(ancho, alto, modo_juego):
     canvas.delete("all")
     dibujar_degradado(canvas, "#00008B", "#4169E1")
 
-    # Mostrar monedas en pantalla
     monedas_display = canvas.create_text(ancho * 0.9, 20, text="Monedas: " + str(monedas), font=('Arial', 16), fill='white')
 
     if modo_juego == 1:
@@ -113,7 +112,7 @@ def iniciar_juego(ancho, alto, modo_juego):
         while 1:
             if raqueta.empezado:
                 pelota.dibujar()
-                ganar_monedas(1) # Ganas una moneda por cada fotograma que la pelota se mueve
+                ganar_monedas(1)
             raqueta.dibujar()
             canvas.itemconfig(score_display, text="Score: " + str(pelota.puntuacion_jugador1))
             canvas.itemconfig(monedas_display, text="Monedas: " + str(monedas))
@@ -125,7 +124,7 @@ def iniciar_juego(ancho, alto, modo_juego):
                 pelota.x = empezar[0]
                 pelota.y = -3
                 raqueta.empezado = False
-                guardar_progreso() # Guardar al final del juego
+                guardar_progreso()
             tk.update_idletasks()
             tk.update()
             time.sleep(0.01)
@@ -140,7 +139,7 @@ def iniciar_juego(ancho, alto, modo_juego):
             pelota.dibujar()
             raqueta1.dibujar()
             raqueta2.dibujar()
-            ganar_monedas(1) # Ganas una moneda por cada fotograma
+            ganar_monedas(1)
             canvas.itemconfig(puntuacion_j1_display, text="J1: " + str(pelota.puntuacion_jugador1))
             canvas.itemconfig(puntuacion_j2_display, text="J2: " + str(pelota.puntuacion_jugador2))
             canvas.itemconfig(monedas_display, text="Monedas: " + str(monedas))
@@ -161,15 +160,18 @@ def iniciar_juego(ancho, alto, modo_juego):
         raqueta_ia = Raqueta(canvas, 'red', 3, "ia")
         pelota = Pelota(canvas, [raqueta_jugador, raqueta_ia], 'white', 3)
         score_display_j1 = canvas.create_text(ancho * 0.5, 20, text="Score: 0", font=('Arial', 16), fill='white')
+        
         while 1:
             if raqueta_jugador.empezado:
                 pelota_pos = pelota.canvas.coords(pelota.id)
                 raqueta_ia.dibujar(pelota_pos)
                 pelota.dibujar()
-                ganar_monedas(1) # Ganas una moneda por cada fotograma
+                ganar_monedas(1)
             raqueta_jugador.dibujar()
+            
             canvas.itemconfig(score_display_j1, text="Score: " + str(pelota.puntuacion_jugador1))
             canvas.itemconfig(monedas_display, text="Monedas: " + str(monedas))
+            
             if pelota.golpea_fondo == True:
                 pelota.golpea_fondo = False
                 pelota.canvas.coords(pelota.id, ancho // 2 - 7, alto // 2 - 7, ancho // 2 + 8, alto // 2 + 8)
@@ -183,7 +185,6 @@ def iniciar_juego(ancho, alto, modo_juego):
             tk.update()
             time.sleep(0.01)
 
-# --- Pantalla de la Tienda ---
 def pantalla_tienda():
     canvas.delete("all")
     dibujar_degradado(canvas, "#303030", "#101010")
@@ -195,10 +196,8 @@ def pantalla_tienda():
     for item_id, item_info in tienda_items.items():
         estado = "COMPRADO" if item_id in items_comprados else f"{item_info['precio']} MONEDAS"
         
-        # Nombre del item
         canvas.create_text(150, y_pos, text=item_info["nombre"], font=('Arial', 14), fill='white', anchor='w')
         
-        # Botón de compra/estado
         if item_id in items_comprados:
             boton = Button(tk, text="COMPRADO", state="disabled", font=('Arial', 12))
         else:
@@ -207,7 +206,6 @@ def pantalla_tienda():
         canvas.create_window(400, y_pos, window=boton, width=120)
         y_pos += 50
     
-    # Botón para volver al menú principal
     boton_volver = Button(tk, text="Volver", command=pantalla_de_inicio, font=('Arial', 14))
     canvas.create_window(250, y_pos + 30, window=boton_volver, width=150)
     
@@ -229,7 +227,6 @@ def pantalla_de_inicio():
     boton_2p = Button(tk, text="2 Jugadores", command=lambda: mostrar_opciones_resolucion(2), **button_style)
     canvas.create_window(420, 180, window=boton_2p, width=150, height=40)
     
-    # Nuevo botón para la tienda
     boton_tienda = Button(tk, text="TIENDA", command=pantalla_tienda, font=('Arial', 14), bg='purple', fg='white')
     canvas.create_window(250, 250, window=boton_tienda, width=150, height=40)
 
@@ -246,7 +243,6 @@ def mostrar_opciones_resolucion(modo_juego):
         canvas.create_window(250, y_pos, window=boton, width=150, height=40)
         y_pos += 60
 
-# Cargar el progreso al iniciar el juego
 cargar_progreso()
 pantalla_de_inicio()
 tk.mainloop()

@@ -23,3 +23,5 @@ Todos los cambios notables del proyecto se documentarán en este archivo.
 ### Version 1.7 - 30 de Agosto, 2025
 
     **Sistema de compra y de puntos**
+
+### Version 1.8 - 30 de Agosto, 2025

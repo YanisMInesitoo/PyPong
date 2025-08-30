@@ -40,8 +40,8 @@ class Pelota:
                 if pos[3] >= raqueta2_pos[1] and pos[3] <= raqueta2_pos[3]:
                     return True, 2
         elif self.modo_juego == 3:
-            raqueta1_pos = self.canvas.coords(self.raquetas[0].id) # Jugador humano
-            raqueta2_pos = self.canvas.coords(self.raquetas[1].id) # IA
+            raqueta1_pos = self.canvas.coords(self.raquetas[0].id)
+            raqueta2_pos = self.canvas.coords(self.raquetas[1].id)
             if pos[2] >= raqueta1_pos[0] and pos[0] <= raqueta1_pos[2]:
                 if pos[3] >= raqueta1_pos[1] and pos[3] <= raqueta1_pos[3]:
                     return True, 1
@@ -54,7 +54,6 @@ class Pelota:
         self.canvas.move(self.id, self.x, self.y)
         pos = self.canvas.coords(self.id)
         
-        # Lógica de rebote en la parte superior e inferior
         if pos[1] <= 0:
             self.y = abs(self.y)
         if pos[3] >= self.canvas_height:
@@ -64,17 +63,16 @@ class Pelota:
             else:
                 self.y = -abs(self.y)
         
-        # Lógica de rebote en los lados y puntuación
-        if self.modo_juego == 1 or self.modo_juego == 3: # En estos modos, las raquetas estan arriba y abajo
-            if self.golpea_raqueta(pos)[0]: # Chequea colisión con raqueta de jugador
+        if self.modo_juego == 1 or self.modo_juego == 3:
+            if self.golpea_raqueta(pos)[0]:
                 self.y = -abs(self.y)
                 self.puntuacion_jugador1 += 1
             if self.modo_juego == 3:
-                if self.golpea_raqueta(pos)[0] and self.golpea_raqueta(pos)[1] == 2: # Chequea colisión con raqueta de IA
+                if self.golpea_raqueta(pos)[0] and self.golpea_raqueta(pos)[1] == 2:
                      self.y = -abs(self.y)
             if pos[0] <= 0 or pos[2] >= self.canvas_width:
                 self.x = -self.x
-        elif self.modo_juego == 2: # En este modo, las raquetas están a los lados
+        elif self.modo_juego == 2:
             rebotar, jugador_que_reboto = self.golpea_raqueta(pos)
             if rebotar:
                 if jugador_que_reboto == 1:
@@ -84,7 +82,7 @@ class Pelota:
             
             if pos[0] <= 0:
                 self.puntuacion_jugador2 += 1
-                self.golpea_fondo = True # ¡CORREGIDO!
+                self.golpea_fondo = True
             if pos[2] >= self.canvas_width:
                 self.puntuacion_jugador1 += 1
-                self.golpea_fondo = True # ¡CORREGIDO!
+                self.golpea_fondo = True
