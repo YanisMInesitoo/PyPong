@@ -32,20 +32,6 @@ import time
 import json
 from pelota import Pelota
 from raqueta import Raqueta
-import pygame
-
-# Inicia el mezclador de sonido de Pygame
-pygame.mixer.init()
-
-# Carga los archivos de sonido
-try:
-    golpe_sonido = pygame.mixer.Sound("golpe.wav")
-    derrota_sonido = pygame.mixer.Sound("derrota.wav")
-except pygame.error:
-    golpe_sonido = None
-    derrota_sonido = None
-    print("No se encontraron los archivos de sonido. Asegúrate de tener 'golpe.wav' y 'derrota.wav' en la misma carpeta.")
-
 
 tk = Tk()
 tk.title("PyPong")
@@ -57,31 +43,37 @@ tk.update()
 
 # --- Sistema de Monedas, Logros y Guardado ---
 monedas = 0
+puntuacion_maxima = 0
 items_comprados = ["raqueta_azul", "pelota_blanca"]
 tienda_items = {
     "raqueta_azul": {"nombre": "Raqueta Azul", "precio": 0, "tipo": "raqueta", "color": "blue"},
     "raqueta_verde": {"nombre": "Raqueta Verde", "precio": 100, "tipo": "raqueta", "color": "green"},
+    "raqueta_dorada": {"nombre": "Raqueta Dorada", "precio": 500, "tipo": "raqueta", "color": "gold"},
+    "pelota_blanca": {"nombre": "Pelota Blanca", "precio": 0, "tipo": "pelota", "color": "white"},
     "pelota_amarilla": {"nombre": "Pelota Amarilla", "precio": 75, "tipo": "pelota", "color": "yellow"},
-    "pelota_rosa": {"nombre": "Pelota Rosa", "precio": 150, "tipo": "pelota", "color": "pink"}
+    "pelota_rosa": {"nombre": "Pelota Rosa", "precio": 150, "tipo": "pelota", "color": "pink"},
+    "pelota_roja": {"nombre": "Pelota Roja", "precio": 250, "tipo": "pelota", "color": "red"}
 }
 
 logros = {
     "primer_golpe": {"nombre": "Primer Golpe", "descripcion": "Golpea la pelota una vez", "completado": False},
     "cien_puntos": {"nombre": "Experto en rebotes", "descripcion": "Consigue 100 puntos en un solo juego", "completado": False},
-    "comprador_novato": {"nombre": "Mi primera compra", "descripcion": "Compra un artículo en la tienda", "completado": False}
+    "comprador_novato": {"nombre": "Mi primera compra", "descripcion": "Compra un artículo en la tienda", "completado": False},
+    "coleccionista": {"nombre": "Coleccionista", "descripcion": "Compra todos los artículos de la tienda", "completado": False}
 }
 
 def guardar_progreso():
     datos = {
         "monedas": monedas,
         "items": items_comprados,
-        "logros": logros
+        "logros": logros,
+        "puntuacion_maxima": puntuacion_maxima
     }
     with open("progreso.json", "w") as archivo:
         json.dump(datos, archivo)
 
 def cargar_progreso():
-    global monedas, items_comprados, logros
+    global monedas, items_comprados, logros, puntuacion_maxima
     try:
         with open("progreso.json", "r") as archivo:
             # Revisa si el archivo está vacío
@@ -91,6 +83,7 @@ def cargar_progreso():
                 monedas = datos.get("monedas", 0)
                 items_comprados = datos.get("items", [])
                 logros_guardados = datos.get("logros", {})
+                puntuacion_maxima = datos.get("puntuacion_maxima", 0)
                 for key, value in logros_guardados.items():
                     if key in logros:
                         logros[key]["completado"] = value.get("completado", False)
@@ -104,12 +97,20 @@ def cargar_progreso():
     # Asegúrate de que el estado inicial se establece si el archivo no existe o está mal
     if "raqueta_azul" not in items_comprados:
         items_comprados.append("raqueta_azul")
+    if "pelota_blanca" not in items_comprados:
+        items_comprados.append("pelota_blanca")
 
 def chequear_logro(logro_id):
     if not logros[logro_id]["completado"]:
         logros[logro_id]["completado"] = True
         guardar_progreso()
         mostrar_notificacion_logro(logros[logro_id]["nombre"])
+
+def chequear_logro_coleccionista():
+    items_disponibles = [item_id for item_id, item_info in tienda_items.items() if item_info["precio"] > 0]
+    items_comprados_pagados = [item_id for item_id in items_comprados if tienda_items[item_id]["precio"] > 0]
+    if len(items_comprados_pagados) == len(items_disponibles):
+        chequear_logro("coleccionista")
 
 def mostrar_notificacion_logro(nombre_logro):
     global canvas
@@ -133,6 +134,7 @@ def comprar_item(item_id):
         items_comprados.append(item_id)
         guardar_progreso()
         chequear_logro("comprador_novato")
+        chequear_logro_coleccionista()
         pantalla_tienda()
 # --- Fin Sistema de Monedas, Logros y Guardado ---
 
@@ -151,12 +153,14 @@ def dibujar_degradado(canvas, color1, color2):
         canvas.create_line(0, i, width, i, fill=color)
 
 def iniciar_juego(ancho, alto, modo_juego):
+    global puntuacion_maxima
     tk.geometry(f"{ancho}x{alto}")
     canvas.config(width=ancho, height=alto)
     canvas.delete("all")
     dibujar_degradado(canvas, "#00008B", "#4169E1")
 
     monedas_display = canvas.create_text(ancho * 0.9, 20, text="Monedas: " + str(monedas), font=('Arial', 16), fill='white')
+    puntuacion_maxima_display = canvas.create_text(ancho * 0.5, 50, text="Puntuación máxima: " + str(puntuacion_maxima), font=('Arial', 12), fill='white')
     
     # Colores por defecto y seleccionados
     raqueta_color = "blue"
@@ -168,10 +172,10 @@ def iniciar_juego(ancho, alto, modo_juego):
             pelota_color = tienda_items[item_id]["color"]
 
     juego_en_curso = True
-    
+
     if modo_juego == 1:
         raqueta = Raqueta(canvas, raqueta_color, 1)
-        pelota = Pelota(canvas, [raqueta], pelota_color, 1, golpe_sonido, derrota_sonido)
+        pelota = Pelota(canvas, [raqueta], pelota_color, 1)
         score_display = canvas.create_text(ancho * 0.5, 20, text="Score: 0", font=('Arial', 16), fill='white')
         
         while juego_en_curso:
@@ -183,6 +187,8 @@ def iniciar_juego(ancho, alto, modo_juego):
             canvas.itemconfig(monedas_display, text="Monedas: " + str(monedas))
             if pelota.golpea_fondo == True:
                 juego_en_curso = False
+                if pelota.puntuacion_jugador1 > puntuacion_maxima:
+                    puntuacion_maxima = pelota.puntuacion_jugador1
                 if pelota.puntuacion_jugador1 >= 100:
                     chequear_logro("cien_puntos")
                 guardar_progreso()
@@ -195,7 +201,7 @@ def iniciar_juego(ancho, alto, modo_juego):
         puntuacion_j2_display = canvas.create_text(ancho * 0.9, 20, text="J2: 0", font=('Arial', 16), fill='white')
         raqueta1 = Raqueta(canvas, raqueta_color, 2, "humano", 1)
         raqueta2 = Raqueta(canvas, raqueta_color, 2, "humano", 2)
-        pelota = Pelota(canvas, [raqueta1, raqueta2], pelota_color, 2, golpe_sonido, derrota_sonido)
+        pelota = Pelota(canvas, [raqueta1, raqueta2], pelota_color, 2)
         
         while juego_en_curso:
             pelota.dibujar()
@@ -215,7 +221,7 @@ def iniciar_juego(ancho, alto, modo_juego):
     elif modo_juego == 3:
         raqueta_jugador = Raqueta(canvas, raqueta_color, 3, "humano")
         raqueta_ia = Raqueta(canvas, "red", 3, "ia")
-        pelota = Pelota(canvas, [raqueta_jugador, raqueta_ia], pelota_color, 3, golpe_sonido, derrota_sonido)
+        pelota = Pelota(canvas, [raqueta_jugador, raqueta_ia], pelota_color, 3)
         score_display_j1 = canvas.create_text(ancho * 0.5, 20, text="Score: 0", font=('Arial', 16), fill='white')
         
         while juego_en_curso:
@@ -231,6 +237,8 @@ def iniciar_juego(ancho, alto, modo_juego):
             
             if pelota.golpea_fondo == True:
                 juego_en_curso = False
+                if pelota.puntuacion_jugador1 > puntuacion_maxima:
+                    puntuacion_maxima = pelota.puntuacion_jugador1
                 if pelota.puntuacion_jugador1 >= 100:
                     chequear_logro("cien_puntos")
                 guardar_progreso()
@@ -310,7 +318,6 @@ def pantalla_de_inicio():
     
     boton_logros = Button(tk, text="LOGROS", command=pantalla_logros, font=('Arial', 14), bg='gold', fg='black')
     canvas.create_window(350, 250, window=boton_logros, width=150, height=40)
-
 
 def mostrar_opciones_resolucion(modo_juego):
     canvas.delete("all")
